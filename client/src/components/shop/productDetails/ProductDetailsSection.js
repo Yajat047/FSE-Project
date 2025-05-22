@@ -53,10 +53,24 @@ const ProductDetailsSection = (props) => {
         }
         if (responseData.error) {
           console.log(responseData.error);
+          dispatch({ type: "loading", payload: false });
+          // Display error message for disabled product
+          layoutDispatch({ 
+            type: "alert", 
+            payload: { 
+              type: "error", 
+              message: responseData.error || "This product is currently unavailable" 
+            }
+          });
+          // Redirect to homepage after 2 seconds
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2000);
         }
       }, 500);
     } catch (error) {
       console.log(error);
+      dispatch({ type: "loading", payload: false });
     }
     fetchCartProduct(); // Updating cart total
   };

@@ -58,6 +58,7 @@ app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(cors());
 app.use(express.static("public"));
+app.use('/api/uploads', express.static('public/uploads'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 

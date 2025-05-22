@@ -1,9 +1,13 @@
 import axios from "axios";
 const apiURL = process.env.REACT_APP_API_URL;
 
-export const getAllProduct = async () => {
+// Accept an isAdmin parameter to control which products to fetch
+export const getAllProduct = async (isAdmin = false) => {
   try {
-    let res = await axios.get(`${apiURL}/api/product/all-product`);
+    // Always add admin=true for admin panel
+    let url = `${apiURL}/api/product/all-product`;
+    if (isAdmin) url += `?admin=true`;
+    let res = await axios.get(url);
     return res.data;
   } catch (error) {
     console.log(error);
@@ -65,7 +69,7 @@ export const editProduct = async (product) => {
   formData.append("pName", product.pName);
   formData.append("pDescription", product.pDescription);
   formData.append("pStatus", product.pStatus);
-  formData.append("pCategory", product.pCategory._id);
+  formData.append("pCategory", product.pCategory._id || product.pCategory);
   formData.append("pQuantity", product.pQuantity);
   formData.append("pPrice", product.pPrice);
   formData.append("pOffer", product.pOffer);

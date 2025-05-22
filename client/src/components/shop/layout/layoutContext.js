@@ -1,5 +1,5 @@
 export const layoutState = {
-  navberHamburger: false,
+  navbarHamburger: false,
   loginSignupModal: false,
   loginSignupError: false,
   cartModal: false,
@@ -16,7 +16,7 @@ export const layoutReducer = (state, action) => {
     case "hamburgerToggle":
       return {
         ...state,
-        navberHamburger: action.payload,
+        navbarHamburger: action.payload,
       };
     case "loginSignupModalToggle":
       return {

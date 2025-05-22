@@ -50,16 +50,20 @@ const EditProductModal = (props) => {
       pQuantity: data.editProductModal.pQuantity,
       pPrice: data.editProductModal.pPrice,
       pOffer: data.editProductModal.pOffer,
+      error: false,
+      success: false,
     });
   }, [data.editProductModal]);
 
   const fetchData = async () => {
-    let responseData = await getAllProduct();
+    // Get fresh data from server
+    let responseData = await getAllProduct(true);
     if (responseData && responseData.Products) {
       dispatch({
         type: "fetchProductsAndChangeState",
         payload: responseData.Products,
       });
+      console.log("Products updated after edit");
     }
   };
 
@@ -70,23 +74,36 @@ const EditProductModal = (props) => {
     } else {
       console.log("Image uploading");
     }
+    
+    // Create a copy of the form data with properly formatted category
+    const formDataToSend = {
+      ...editformData,
+      // Make sure the status is explicitly passed
+      pStatus: editformData.pStatus === "Disabled" ? "Disabled" : "Active"
+    };
+    
     try {
-      let responseData = await editProduct(editformData);
+      let responseData = await editProduct(formDataToSend);
       if (responseData.success) {
         fetchData();
         setEditformdata({ ...editformData, success: responseData.success });
         setTimeout(() => {
-          return setEditformdata({
+          setEditformdata({
             ...editformData,
-            success: responseData.success,
+            success: false,
           });
+          
+          // Close modal after successful update
+          if (responseData.updatedProduct) {
+            dispatch({ type: "editProductModalClose", payload: false });
+          }
         }, 2000);
       } else if (responseData.error) {
         setEditformdata({ ...editformData, error: responseData.error });
         setTimeout(() => {
-          return setEditformdata({
+          setEditformdata({
             ...editformData,
-            error: responseData.error,
+            error: false,
           });
         }, 2000);
       }
@@ -254,58 +271,38 @@ const EditProductModal = (props) => {
                   className="px-4 py-2 border focus:outline-none"
                   id="status"
                 >
-                  <option name="status" value="Active">
-                    Active
-                  </option>
-                  <option name="status" value="Disabled">
-                    Disabled
-                  </option>
+                  <option value="Active">Active</option>
+                  <option value="Disabled">Disabled</option>
                 </select>
               </div>
               <div className="w-1/2 flex flex-col space-y-1">
-                <label htmlFor="status">Product Category *</label>
+                <label htmlFor="category">Product Category *</label>
                 <select
+                  value={editformData.pCategory._id || ""}
                   onChange={(e) =>
                     setEditformdata({
                       ...editformData,
                       error: false,
                       success: false,
-                      pCategory: e.target.value,
+                      pCategory: { _id: e.target.value },
                     })
                   }
-                  name="status"
+                  name="category"
                   className="px-4 py-2 border focus:outline-none"
-                  id="status"
+                  id="category"
                 >
                   <option disabled value="">
                     Select a category
                   </option>
                   {categories && categories.length > 0
-                    ? categories.map((elem) => {
-                        return (
-                          <Fragment key={elem._id}>
-                            {editformData.pCategory._id &&
-                            editformData.pCategory._id === elem._id ? (
-                              <option
-                                name="status"
-                                value={elem._id}
-                                key={elem._id}
-                                selected
-                              >
-                                {elem.cName}
-                              </option>
-                            ) : (
-                              <option
-                                name="status"
-                                value={elem._id}
-                                key={elem._id}
-                              >
-                                {elem.cName}
-                              </option>
-                            )}
-                          </Fragment>
-                        );
-                      })
+                    ? categories.map((elem) => (
+                        <option
+                          value={elem._id}
+                          key={elem._id}
+                        >
+                          {elem.cName}
+                        </option>
+                      ))
                     : ""}
                 </select>
               </div>

@@ -29,10 +29,17 @@ class Product {
 
   async getAllProduct(req, res) {
     try {
+      // Check if request is coming from admin panel
+      const isAdmin = req.query.admin === 'true';
+      
+      // If admin, return all products; otherwise, only return active products
+      const query = isAdmin ? {} : { pStatus: "Active" };
+      
       let Products = await productModel
-        .find({})
+        .find(query)
         .populate("pCategory", "_id cName")
         .sort({ _id: -1 });
+      
       if (Products) {
         return res.json({ Products });
       }
@@ -62,7 +69,7 @@ class Product {
     else if (pName.length > 255 || pDescription.length > 3000) {
       Product.deleteImages(images, "file");
       return res.json({
-        error: "Name 255 & Description must not be 3000 charecter long",
+        error: "Name 255 & Description must not be 3000 character long",
       });
     }
     // Validate Images
@@ -125,7 +132,7 @@ class Product {
     // Validate Name and description
     else if (pName.length > 255 || pDescription.length > 3000) {
       return res.json({
-        error: "Name 255 & Description must not be 3000 charecter long",
+        error: "Name 255 & Description must not be 3000 character long",
       });
     }
     // Validate Update Images
@@ -151,13 +158,21 @@ class Product {
         Product.deleteImages(pImages.split(","), "string");
       }
       try {
-        let editProduct = productModel.findByIdAndUpdate(pId, editData);
-        editProduct.exec((err) => {
-          if (err) console.log(err);
-          return res.json({ success: "Product edit successfully" });
+        console.log("Updating product with status:", editData.pStatus);
+        
+        // Use the new option to return the updated document
+        let editProduct = productModel.findByIdAndUpdate(pId, editData, { new: true });
+        editProduct.exec((err, updatedProduct) => {
+          if (err) {
+            console.log("Product update error:", err);
+            return res.json({ error: "Failed to update product" });
+          }
+          console.log("Updated product status:", updatedProduct.pStatus);
+          return res.json({ success: "Product edit successfully", updatedProduct });
         });
       } catch (err) {
-        console.log(err);
+        console.log("Server error:", err);
+        return res.json({ error: "Server error occurred" });
       }
     }
   }
@@ -191,11 +206,23 @@ class Product {
           .findById(pId)
           .populate("pCategory", "cName")
           .populate("pRatingsReviews.user", "name email userImage");
+        
         if (singleProduct) {
+          // Check if this is an admin request
+          const isAdmin = req.query.admin === 'true';
+          
+          // If it's a disabled product and not an admin request, return an error
+          if (singleProduct.pStatus === "Disabled" && !isAdmin) {
+            return res.json({ error: "This product is currently unavailable" });
+          }
+          
           return res.json({ Product: singleProduct });
+        } else {
+          return res.json({ error: "Product not found" });
         }
       } catch (err) {
         console.log(err);
+        return res.json({ error: "Error finding product" });
       }
     }
   }
@@ -206,8 +233,9 @@ class Product {
       return res.json({ error: "All fields must be required" });
     } else {
       try {
+        // Only return active products
         let products = await productModel
-          .find({ pCategory: catId })
+          .find({ pCategory: catId, pStatus: "Active" })
           .populate("pCategory", "cName");
         if (products) {
           return res.json({ Products: products });
@@ -224,8 +252,9 @@ class Product {
       return res.json({ error: "All fields must be required" });
     } else {
       try {
+        // Only return active products
         let products = await productModel
-          .find({ pPrice: { $lt: price } })
+          .find({ pPrice: { $lt: price }, pStatus: "Active" })
           .populate("pCategory", "cName")
           .sort({ pPrice: -1 });
         if (products) {
@@ -243,8 +272,10 @@ class Product {
       return res.json({ error: "All fields must be required" });
     } else {
       try {
+        // Only return active products
         let wishProducts = await productModel.find({
           _id: { $in: productArray },
+          pStatus: "Active"
         });
         if (wishProducts) {
           return res.json({ Products: wishProducts });
@@ -261,8 +292,10 @@ class Product {
       return res.json({ error: "All fields must be required" });
     } else {
       try {
+        // Only return active products
         let cartProducts = await productModel.find({
           _id: { $in: productArray },
+          pStatus: "Active"
         });
         if (cartProducts) {
           return res.json({ Products: cartProducts });
