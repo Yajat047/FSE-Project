@@ -37,7 +37,7 @@ const DashboardCard = (props) => {
           <div className="text-lg font-medium">Customers</div>
           <div className="flex items-center space-x-1 text-green-500">
             {/* <span>7%</span> */}
-            <span>
+            {/* <span>
               <svg
                 className="w-3 h-3"
                 fill="none"
@@ -52,7 +52,7 @@ const DashboardCard = (props) => {
                   d="M5 10l7-7m0 0l7 7m-7-7v18"
                 />
               </svg>
-            </span>
+            </span> */}
           </div>
         </div>
         <div className="flex flex-col justify-center items-center col-span-1 bg-white p-6 shadow-lg hover:shadow-none cursor-pointer transition-all duration-300 ease-in border-b-4 border-opacity-0 hover:border-opacity-100 border-red-200">
@@ -78,7 +78,7 @@ const DashboardCard = (props) => {
           <div className="text-lg font-medium">Orders</div>
           <div className="flex items-center space-x-1 text-green-500">
             {/* <span>10%</span> */}
-            <span>
+            {/* <span>
               <svg
                 className="w-3 h-3"
                 fill="none"
@@ -93,7 +93,7 @@ const DashboardCard = (props) => {
                   d="M5 10l7-7m0 0l7 7m-7-7v18"
                 />
               </svg>
-            </span>
+            </span> */}
           </div>
         </div>
         <div className="flex flex-col justify-center items-center col-span-1 bg-white p-6 shadow-lg hover:shadow-none cursor-pointer transition-all duration-300 ease-in border-b-4 border-opacity-0 hover:border-opacity-100 border-green-200">
